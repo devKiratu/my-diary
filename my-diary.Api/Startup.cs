@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using my_diary.Api.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,6 +28,7 @@ namespace my_diary.Api
         {
 
             services.AddControllers();
+            services.AddSingleton<IInMemoryDb, InMemDb>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
