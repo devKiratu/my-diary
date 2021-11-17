@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace my_diary.Api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     [ApiController]
     public class EntriesController : ControllerBase
     {
@@ -53,15 +53,16 @@ namespace my_diary.Api.Controllers
         public ActionResult UpdateEntry([FromRoute] string id, [FromBody] Entry entry)
         {
             var oldEntry = db.Entries.FirstOrDefault(e => e.Id == id);
-            if (entry == null)
+            if (oldEntry == null)
             {
                 return BadRequest($"Entry of Id {id} does not exist");
-            }
-
+            } 
+          
             db.Entries.Remove(oldEntry);
             db.Entries.Add(entry);
 
             return NoContent();
+
         }
     }
 }
