@@ -23,7 +23,7 @@ namespace my_diary.Api.Controllers
         public ActionResult<Entry> CreateEntry([FromBody] Entry entry)
         {
             db.Entries.Add(entry);
-            return entry;
+            return Ok(entry);
         }
 
         [HttpGet("{id}")]
@@ -35,7 +35,7 @@ namespace my_diary.Api.Controllers
                 return BadRequest($"Entry of Id {Id} does not exist");
             }
 
-            return entry;
+            return Ok(entry);
         }
 
         [HttpGet]
@@ -46,7 +46,7 @@ namespace my_diary.Api.Controllers
                 return NotFound("No content exists yet");
             }
 
-            return db.Entries;
+            return Ok(db.Entries);
         }
 
         [HttpPut("{id}")]
