@@ -3,7 +3,31 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31729.503
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "my-diary.Api", "my-diary.Api\my-diary.Api.csproj", "{57494B7D-4BBF-4AC4-8EA1-9EA0ADAAF95E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "my-diary.Api.Tests", "my-diary.Api.Tests\my-diary.Api.Tests.csproj", "{BDC2ECA7-A2A5-4900-8148-AECEE0E5C9C6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D0A27232-31FF-4152-A402-4DD367A8ACE9}"
+	ProjectSection(SolutionItems) = preProject
+		.dockerignore = .dockerignore
+		Dockerfile = Dockerfile
+	EndProjectSection
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{57494B7D-4BBF-4AC4-8EA1-9EA0ADAAF95E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57494B7D-4BBF-4AC4-8EA1-9EA0ADAAF95E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57494B7D-4BBF-4AC4-8EA1-9EA0ADAAF95E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57494B7D-4BBF-4AC4-8EA1-9EA0ADAAF95E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BDC2ECA7-A2A5-4900-8148-AECEE0E5C9C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BDC2ECA7-A2A5-4900-8148-AECEE0E5C9C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BDC2ECA7-A2A5-4900-8148-AECEE0E5C9C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BDC2ECA7-A2A5-4900-8148-AECEE0E5C9C6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
