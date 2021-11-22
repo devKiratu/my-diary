@@ -15,8 +15,9 @@ WORKDIR "/src/my-diary.Api"
 RUN dotnet build "my-diary.Api.csproj" -c Release -o /app/build
 
 #Testing
+FROM build AS test
 WORKDIR "/src/my-diary.Api.Tests"
-RUN dotnet test
+RUN dotnet test /p:CollectCoverage=true /p:CoverletOutput=TestResults/ /p:CoverletOutputFormat=lcov
 
 #Publish
 FROM build AS publish
