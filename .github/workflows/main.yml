@@ -13,47 +13,34 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-#   build_app:
-#     runs-on: ubuntu-latest
-#     steps:
-#       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-#       - uses: actions/checkout@v2
+  build_app:
+    runs-on: ubuntu-latest
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
 
-#       # Builds and deploys docker image
-#       - name: Build and deploy docker image
-#         env: 
-#           HEROKU_API_KEY: ${{secrets.HEROKU_API_KEY}}
-#           APP_NAME: ${{'livediary-api'}}
-#         run: |
-#           docker login --username=_ --password=$HEROKU_API_KEY registry.heroku.com
-#           heroku container:push web -a $APP_NAME
-#           heroku container:release web -a $APP_NAME
+      # Builds and deploys docker image
+      - name: Build and deploy docker image
+        env: 
+          HEROKU_API_KEY: ${{secrets.HEROKU_API_KEY}}
+          APP_NAME: ${{'livediary-api'}}
+        run: |
+          docker login --username=_ --password=$HEROKU_API_KEY registry.heroku.com
+          heroku container:push web -a $APP_NAME
+          heroku container:release web -a $APP_NAME
           
   publish_test_coverage:
-#     needs: build_app
+    needs: build_app
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      #Run the test project and push coverage report to coveralls
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 5.0.301
-
-#       - name: Install Dependencies
-#         run: dotnet restore
-
-#       - name: Build
-#         run: dotnet build --configuration Release --no-restore
-
-#       - name: Test
-#         run: dotnet test --no-restore --verbosity normal
-
+      #Run the test project and push coverage report to coveralls
       - name: Generate Test Coverage Report
         run: |
-          #ls -la
-          #mkdir -p my-diary.Api.Tests/TestResults
-          #cd my-diary.Api.Tests
           dotnet test my-diary.Api.Tests/my-diary.Api.Tests.csproj /p:CollectCoverage=true /p:CoverletOutput=TestResults/ /p:CoverletOutputFormat=lcov
       - name: Publish Test Coverage Report
         uses: coverallsapp/github-action@master
