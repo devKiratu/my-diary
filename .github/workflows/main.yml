@@ -13,24 +13,24 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  build_app:
-    runs-on: ubuntu-latest
-    steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+#   build_app:
+#     runs-on: ubuntu-latest
+#     steps:
+#       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+#       - uses: actions/checkout@v2
 
-      # Builds and deploys docker image
-      - name: Build and deploy docker image
-        env: 
-          HEROKU_API_KEY: ${{secrets.HEROKU_API_KEY}}
-          APP_NAME: ${{'livediary-api'}}
-        run: |
-          docker login --username=_ --password=$HEROKU_API_KEY registry.heroku.com
-          heroku container:push web -a $APP_NAME
-          heroku container:release web -a $APP_NAME
+#       # Builds and deploys docker image
+#       - name: Build and deploy docker image
+#         env: 
+#           HEROKU_API_KEY: ${{secrets.HEROKU_API_KEY}}
+#           APP_NAME: ${{'livediary-api'}}
+#         run: |
+#           docker login --username=_ --password=$HEROKU_API_KEY registry.heroku.com
+#           heroku container:push web -a $APP_NAME
+#           heroku container:release web -a $APP_NAME
           
   publish_test_coverage:
-    needs: build_app
+#     needs: build_app
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
