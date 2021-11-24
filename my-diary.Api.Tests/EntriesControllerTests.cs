@@ -77,5 +77,33 @@ namespace my_diary.Api.Tests
             Assert.IsAssignableFrom<OkObjectResult>(entries.Result);
             Assert.IsType<ActionResult<List<Entry>>>(entries);
         }
+
+        [Fact]
+        public void GetOne_UseWrongId_ReturnsBadRequest()
+        {
+            var entriesController = new EntriesController(db);
+            var result = entriesController.GetOne("test");
+            Assert.IsAssignableFrom<BadRequestObjectResult>(result.Result);
+        }
+
+        [Fact]
+        public void GetOne_ProvideValidId_ReturnEntry()
+        {
+            var testEntry = new Entry
+            {
+                Id = "one",
+                LastUpdated = DateTimeOffset.UtcNow,
+                Title = "Note one",
+                Text = "First note yea"
+            };
+            var inMemDb = new InMemDb();
+            inMemDb.Entries.Add(testEntry);
+            var entriesController = new EntriesController(inMemDb);
+            var entry = entriesController.GetOne("one");
+
+            Assert.IsAssignableFrom<OkObjectResult>(entry.Result);
+            Assert.IsType<ActionResult<Entry>>(entry);
+            //TODO: Assert that testEntry == entry.Value
+        }
     }
 }
