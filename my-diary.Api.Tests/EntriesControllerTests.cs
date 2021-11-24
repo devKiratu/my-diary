@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using my_diary.Api.Controllers;
 using my_diary.Api.Model;
 using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace my_diary.Api.Tests
@@ -45,9 +46,36 @@ namespace my_diary.Api.Tests
             var entriesAfterAdd = db.Entries.Count;
             var diff = entriesAfterAdd - entriesBeforeAdd;
 
-            //Assert
+            //Assert 
             Assert.Equal(1, diff);
             Assert.Contains(entry, db.Entries);
+        }
+
+        [Fact]
+        public void GetAll_NoEntriesExist_ReturnsErrorCode404()
+        {
+            var entriesController = new EntriesController(db);
+            var response = entriesController.GetAll();
+            Assert.IsAssignableFrom<NotFoundObjectResult>(response.Result); 
+        }
+
+        [Fact]
+        public void GetAll_EntriesExist_ReturnsOkResult()
+        {
+            var entry = new Entry
+            {
+                Id = "one",
+                LastUpdated = DateTimeOffset.UtcNow,
+                Title = "Note one",
+                Text = "First note yea"
+            };
+            var inMemDb = new InMemDb();
+            inMemDb.Entries.Add(entry);
+            var entriesController = new EntriesController(inMemDb);
+
+            var entries = entriesController.GetAll();
+            Assert.IsAssignableFrom<OkObjectResult>(entries.Result);
+            Assert.IsType<ActionResult<List<Entry>>>(entries);
         }
     }
 }
