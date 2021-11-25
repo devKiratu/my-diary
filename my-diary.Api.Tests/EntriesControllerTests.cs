@@ -53,6 +53,14 @@ namespace my_diary.Api.Tests
         }
 
         [Fact]
+        public void CreateEntry_InvalidEntry_ReturnsBadRequest()
+        {
+            var entriesController = new EntriesController(db);
+            var result = entriesController.CreateEntry(new Entry());
+            Assert.IsAssignableFrom<BadRequestObjectResult>(result);
+        }
+
+        [Fact]
         public void GetAll_NoEntriesExist_ReturnsErrorCode404()
         {
             var entriesController = new EntriesController(db);

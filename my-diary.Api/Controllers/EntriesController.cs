@@ -22,6 +22,10 @@ namespace my_diary.Api.Controllers
         [HttpPost]
         public IActionResult CreateEntry([FromBody] Entry entry)
         {
+            if (!IsValidEntry(entry))
+            {
+                return BadRequest("Invalid Entry. An Entry should have a title and content");
+            }
             db.Entries.Add(entry);
             return Ok(entry);
         }
