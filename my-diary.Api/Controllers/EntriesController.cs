@@ -22,6 +22,10 @@ namespace my_diary.Api.Controllers
         [HttpPost]
         public IActionResult CreateEntry([FromBody] Entry entry)
         {
+            if (!IsValidEntry(entry))
+            {
+                return BadRequest("Invalid Entry. An Entry should have a title and content");
+            }
             db.Entries.Add(entry);
             return Ok(entry);
         }
@@ -58,11 +62,21 @@ namespace my_diary.Api.Controllers
                 return BadRequest($"Entry of Id {id} does not exist");
             } 
           
+            if (!IsValidEntry(entry))
+            {
+                return BadRequest("Invalid Entry");
+            }
+            entry.LastUpdated = DateTimeOffset.UtcNow;
             db.Entries.Remove(oldEntry);
             db.Entries.Add(entry);
 
             return Ok("Successfully Updated");
 
+        }
+
+        private bool IsValidEntry(Entry entry)
+        {
+            return !string.IsNullOrWhiteSpace(entry.Id) || !string.IsNullOrWhiteSpace(entry.Title) || !string.IsNullOrWhiteSpace(entry.Text);
         }
     }
 }
