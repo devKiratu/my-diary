@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using my_diary.Api.Controllers;
 using my_diary.Api.Model;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Xunit;
 
@@ -23,7 +24,7 @@ namespace my_diary.Api.Tests
                 Text = "First note yea" 
             };
             //Act
-            var result = entriesController.CreateEntry(entry).Result;
+            var result = entriesController.CreateEntry(entry);
             //Assert
             Assert.IsType<OkObjectResult>(result);
         }
@@ -56,7 +57,7 @@ namespace my_diary.Api.Tests
         {
             var entriesController = new EntriesController(db);
             var response = entriesController.GetAll();
-            Assert.IsAssignableFrom<NotFoundObjectResult>(response.Result); 
+            Assert.IsAssignableFrom<NotFoundObjectResult>(response); 
         }
 
         [Fact]
@@ -73,9 +74,12 @@ namespace my_diary.Api.Tests
             inMemDb.Entries.Add(entry);
             var entriesController = new EntriesController(inMemDb);
 
-            var entries = entriesController.GetAll();
-            Assert.IsAssignableFrom<OkObjectResult>(entries.Result);
-            Assert.IsType<ActionResult<List<Entry>>>(entries);
+            var result = entriesController.GetAll();
+            var okObjResult = Assert.IsAssignableFrom<OkObjectResult>(result);
+            var entries = okObjResult.Value;
+            Assert.IsType<List<Entry>>(entries);
+            Assert.NotEmpty((IEnumerable)entries);
+
         }
 
         [Fact]
@@ -83,7 +87,7 @@ namespace my_diary.Api.Tests
         {
             var entriesController = new EntriesController(db);
             var result = entriesController.GetOne("test");
-            Assert.IsAssignableFrom<BadRequestObjectResult>(result.Result);
+            Assert.IsAssignableFrom<BadRequestObjectResult>(result);
         }
 
         [Fact]
@@ -100,10 +104,9 @@ namespace my_diary.Api.Tests
             inMemDb.Entries.Add(testEntry);
             var entriesController = new EntriesController(inMemDb);
             var entry = entriesController.GetOne("one");
-
-            Assert.IsAssignableFrom<OkObjectResult>(entry.Result);
-            Assert.IsType<ActionResult<Entry>>(entry);
-            //TODO: Assert that testEntry == entry.Value
+            var returned = Assert.IsAssignableFrom<OkObjectResult>(entry);
+            var item = Assert.IsType<Entry>(returned.Value);
+            Assert.Equal(testEntry.Id, item.Id);
         }
     }
 }
