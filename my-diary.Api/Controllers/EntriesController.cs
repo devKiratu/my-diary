@@ -20,14 +20,14 @@ namespace my_diary.Api.Controllers
         }
 
         [HttpPost]
-        public ActionResult<Entry> CreateEntry([FromBody] Entry entry)
+        public IActionResult CreateEntry([FromBody] Entry entry)
         {
             db.Entries.Add(entry);
             return Ok(entry);
         }
 
         [HttpGet("{id}")]
-        public ActionResult<Entry> GetOne([FromRoute] string Id)
+        public IActionResult GetOne([FromRoute] string Id)
         {
             var entry = db.Entries.FirstOrDefault(e => e.Id == Id);
             if (entry == null)
@@ -39,7 +39,7 @@ namespace my_diary.Api.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<Entry>> GetAll()
+        public IActionResult GetAll()
         {
             if (db.Entries.Count == 0)
             {
@@ -50,7 +50,7 @@ namespace my_diary.Api.Controllers
         }
 
         [HttpPut("{id}")]
-        public ActionResult UpdateEntry([FromRoute] string id, [FromBody] Entry entry)
+        public IActionResult UpdateEntry([FromRoute] string id, [FromBody] Entry entry)
         {
             var oldEntry = db.Entries.FirstOrDefault(e => e.Id == id);
             if (oldEntry == null)
@@ -61,7 +61,7 @@ namespace my_diary.Api.Controllers
             db.Entries.Remove(oldEntry);
             db.Entries.Add(entry);
 
-            return NoContent();
+            return Ok("Successfully Updated");
 
         }
     }
