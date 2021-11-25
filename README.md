@@ -1,5 +1,5 @@
 [![Build](https://github.com/devKiratu/my-diary/actions/workflows/main.yml/badge.svg)](https://github.com/devKiratu/my-diary/actions/workflows/main.yml)
-[![Coverage Status](https://coveralls.io/repos/github/devKiratu/my-diary/badge.svg?branch=develop&service=github)](https://coveralls.io/github/devKiratu/my-diary?branch=develop&service=github)
+[![Coverage Status](https://coveralls.io/repos/github/devKiratu/my-diary/badge.svg?branch=develop&service=github&kill_cache=1)](https://coveralls.io/github/devKiratu/my-diary?branch=develop&service=github&kill_cache=1)
 
 # my-diary
 This is the dotnet version of the [myDiary](https://github.com/devKiratu/myDiary) project, for the purpose of testing my backend skills.
