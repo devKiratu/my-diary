@@ -57,6 +57,7 @@ namespace my_diary.Api
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapSwagger("/swagger/{documentName}/swagger.json");
             });
         }
     }
