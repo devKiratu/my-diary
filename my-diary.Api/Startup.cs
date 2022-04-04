@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -29,8 +30,11 @@ namespace my_diary.Api
         {
 
             services.AddControllers();
-            services.AddSingleton<IInMemoryDb, InMemDb>();
-
+            //services.AddSingleton<MainDbContext, InMemDb>();
+            services.AddDbContext<MainDbContext>(o =>
+            {
+                o.UseNpgsql(Configuration.GetConnectionString("diaryDb"));
+            });
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "my-diary Api", Version = "v1" });
@@ -59,6 +63,12 @@ namespace my_diary.Api
                 endpoints.MapControllers();
                 endpoints.MapSwagger("/swagger/{documentName}/swagger.json");
             });
+#if DEBUG
+            var scope = app.ApplicationServices.CreateScope();
+            var provider = scope.ServiceProvider;
+            var dbContext = provider.GetRequiredService<MainDbContext>();
+            dbContext.Database.EnsureCreated();
+#endif
         }
     }
 }
