@@ -12,11 +12,11 @@ namespace my_diary.Api.Controllers
     [ApiController]
     public class EntriesController : ControllerBase
     {
-        private readonly IInMemoryDb db;
+        private readonly MainDbContext _db;
 
-        public EntriesController(IInMemoryDb db)
+        public EntriesController(MainDbContext db)
         {
-            this.db = db;
+            this._db = db;
         }
 
         [HttpPost]
@@ -26,14 +26,16 @@ namespace my_diary.Api.Controllers
             {
                 return BadRequest("Invalid Entry. An Entry should have a title and content");
             }
-            db.Entries.Add(entry);
-            return Ok(entry);
+           var e =  _db.Entries.Add(entry);
+            _db.SaveChanges();
+            
+            return Ok(e.Entity);
         }
 
         [HttpGet("{id}")]
         public IActionResult GetOne([FromRoute] string Id)
         {
-            var entry = db.Entries.FirstOrDefault(e => e.Id == Id);
+            var entry = _db.Entries.FirstOrDefault(e => e.Id == Id);
             if (entry == null)
             {
                 return BadRequest($"Entry of Id {Id} does not exist");
@@ -45,18 +47,18 @@ namespace my_diary.Api.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            if (db.Entries.Count == 0)
+            if (!_db.Entries.Any())
             {
                 return NotFound("No content exists yet");
             }
 
-            return Ok(db.Entries);
+            return Ok(_db.Entries.ToList());
         }
 
         [HttpPut("{id}")]
         public IActionResult UpdateEntry([FromRoute] string id, [FromBody] Entry entry)
         {
-            var oldEntry = db.Entries.FirstOrDefault(e => e.Id == id);
+            var oldEntry = _db.Entries.FirstOrDefault(e => e.Id == id);
             if (oldEntry == null)
             {
                 return BadRequest($"Entry of Id {id} does not exist");
@@ -66,15 +68,17 @@ namespace my_diary.Api.Controllers
             {
                 return BadRequest("Invalid Entry");
             }
-            entry.LastUpdated = DateTimeOffset.UtcNow;
-            db.Entries.Remove(oldEntry);
-            db.Entries.Add(entry);
+            oldEntry.LastUpdated = DateTimeOffset.UtcNow;
+            oldEntry.Title = entry.Title;
+            oldEntry.Text = entry.Text;
+            _db.SaveChanges();
+
 
             return Ok("Successfully Updated");
 
         }
 
-        private bool IsValidEntry(Entry entry)
+        private static bool IsValidEntry(Entry entry)
         {
             return !string.IsNullOrWhiteSpace(entry.Id) || !string.IsNullOrWhiteSpace(entry.Title) || !string.IsNullOrWhiteSpace(entry.Text);
         }
