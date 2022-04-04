@@ -17,6 +17,6 @@ namespace my_diary.Api.Model
         }
 
         public DbSet<Entry> Entries { get; set; }
-        public DbSet<User>  Users { get; set; }
+        //public DbSet<User>  Users { get; set; }
     }
 }

@@ -18,12 +18,14 @@ namespace my_diary.Api
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             Configuration = configuration;
+            Env = env;
         }
 
         public IConfiguration Configuration { get; }
+        public IWebHostEnvironment Env { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -33,12 +35,26 @@ namespace my_diary.Api
             //services.AddSingleton<MainDbContext, InMemDb>();
             services.AddDbContext<MainDbContext>(o =>
             {
-                o.UseNpgsql(Configuration.GetConnectionString("diaryDb"));
+                o.UseNpgsql(Env.IsProduction()? GetHerokuDbUri() : Configuration.GetConnectionString("diaryDb"));
             });
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "my-diary Api", Version = "v1" });
             });
+        }
+
+        private string GetHerokuDbUri()
+        {
+            // Get the connection string from the ENV variables
+            string connectionUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+
+            // parse the connection string
+            var databaseUri = new Uri(connectionUrl);
+
+            string db = databaseUri.LocalPath.TrimStart('/');
+            string[] userInfo = databaseUri.UserInfo.Split(':', StringSplitOptions.RemoveEmptyEntries);
+
+            return $"User ID={userInfo[0]};Password={userInfo[1]};Host={databaseUri.Host};Port={databaseUri.Port};Database={db};Pooling=true;SSL Mode=Require;Trust Server Certificate=True;";
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
