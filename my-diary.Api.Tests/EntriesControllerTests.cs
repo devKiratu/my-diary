@@ -25,10 +25,7 @@ namespace my_diary.Api.Tests
             });
             context.SaveChanges();
         }
-        public void Dispose() 
-        {
-            GC.SuppressFinalize(this);
-        }
+        public void Dispose() { }
     }
 
     public class EntriesControllerTests : IClassFixture<SetupFixture>
