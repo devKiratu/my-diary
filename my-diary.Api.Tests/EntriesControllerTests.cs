@@ -44,10 +44,8 @@ namespace my_diary.Api.Tests
 
             ////Arrange
             var entriesController = new EntriesController(context);
-            var entry = new Entry
+            var entry = new EntryDto
             {
-                Id = "five",
-                LastUpdated = DateTimeOffset.UtcNow,
                 Title = "Note five",
                 Text = "This is the fifth note"
             };
@@ -63,22 +61,21 @@ namespace my_diary.Api.Tests
             using var context = new MainDbContext(_options);
             //Arrange
             var entriesController = new EntriesController(context);
-            var entry = new Entry
+            var entry = new EntryDto
             {
-                Id = "six",
-                LastUpdated = DateTimeOffset.UtcNow,
                 Title = "Note six",
                 Text = "This is the sixth note"
             };
             //Act
             var entriesBeforeAdd = context.Entries.ToList().Count;
-            entriesController.CreateEntry(entry);
+            var result = entriesController.CreateEntry(entry);
             var entriesAfterAdd = context.Entries.ToList().Count;
             var diff = entriesAfterAdd - entriesBeforeAdd;
 
             //Assert 
+            var createdEntry = Assert.IsAssignableFrom<OkObjectResult>(result);
             Assert.Equal(1, diff);
-            Assert.Contains(entry, context.Entries);
+            Assert.Contains((Entry)createdEntry.Value, context.Entries);
         }
 
         [Fact]
@@ -142,8 +139,6 @@ namespace my_diary.Api.Tests
 
             var testEntry = new Entry
             {
-                Id = "one",
-                LastUpdated = DateTimeOffset.UtcNow,
                 Title = "Note one update",
                 Text = "Updated the first note"
             };
@@ -153,7 +148,7 @@ namespace my_diary.Api.Tests
             var result = entriesController.UpdateEntry(null, testEntry);
             Assert.IsAssignableFrom<BadRequestObjectResult>(result);
             //Valid Id, invalid object
-            var result2 = entriesController.UpdateEntry(testEntry.Id, new Entry());
+            var result2 = entriesController.UpdateEntry("one", new Entry());
             Assert.IsAssignableFrom<BadRequestObjectResult>(result2);
 
 
@@ -164,17 +159,15 @@ namespace my_diary.Api.Tests
         {
             using var context = new MainDbContext(_options);
 
-            var testEntry = new Entry
+            var testEntry = new EntryDto
             {
-                Id = "two",
-                LastUpdated = DateTimeOffset.UtcNow,
                 Title = "Note two update",
                 Text = "Updated the second note"
             };
 
             var entriesController = new EntriesController(context);
 
-            var result = entriesController.UpdateEntry(testEntry.Id, testEntry);
+            var result = entriesController.UpdateEntry("two", testEntry);
             Assert.IsAssignableFrom<OkObjectResult>(result);
 
         }
