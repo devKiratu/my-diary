@@ -12,11 +12,14 @@ namespace my_diary.Api.Model
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            //auto increment identity columns
-            modelBuilder.UseSerialColumns();
+            modelBuilder.Entity<User>(b =>
+            {
+                b.OwnsMany(u => u.Entries, e => e.HasIndex(e => e.Id));
+            });
+            
         }
 
         public DbSet<Entry> Entries { get; set; }
-        //public DbSet<User>  Users { get; set; }
+        public DbSet<User>  Users { get; set; }
     }
 }
