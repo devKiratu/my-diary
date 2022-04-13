@@ -241,7 +241,15 @@ namespace my_diary.Api.Tests
 
             var result = entriesController.UpdateEntry("two", testEntry);
             Assert.IsAssignableFrom<OkObjectResult>(result);
+        }
 
+        [Fact]
+        public void UnauthorizedUser_CannotAccessEndpoints()
+        {
+            using var context = new MainDbContext(_options);
+            var entriesController = new EntriesController(context);
+
+            Assert.Throws<NullReferenceException>(() => entriesController.GetAll());
         }
     }
 }
