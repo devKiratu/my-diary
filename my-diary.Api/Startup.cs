@@ -33,7 +33,6 @@ namespace my_diary.Api
         {
 
             services.AddControllers();
-            //services.AddSingleton<MainDbContext, InMemDb>();
             services.AddDbContext<MainDbContext>(o =>
             {
                 o.UseNpgsql(Env.IsProduction()? GetHerokuDbUri() : Configuration.GetConnectionString("diaryDb"));
