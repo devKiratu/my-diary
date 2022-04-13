@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 
 namespace my_diary.Api.Model
 {
-    public class User : SignupDto
+    public class LoginDto
     {
-        [Key, Required]
-        public string Id { get; set; }
-        public ICollection<Entry> Entries { get; set; }
+        [Required, EmailAddress]
+        public string Email { get; set; }
+        [Required]
+        public string Password { get; set; }
     }
 }

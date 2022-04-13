@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using my_diary.Api.Authorization;
 using my_diary.Api.Model;
 using System;
 using System.Collections.Generic;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace my_diary.Api.Controllers
 {
+    [Authorize]
     [Route("api/v1/[controller]")]
     [ApiController]
     public class EntriesController : ControllerBase
@@ -16,7 +18,7 @@ namespace my_diary.Api.Controllers
 
         public EntriesController(MainDbContext db)
         {
-            _db = db;
+            _db = db ?? throw new ArgumentNullException(nameof(db));
         }
 
         [HttpPost]
@@ -26,6 +28,9 @@ namespace my_diary.Api.Controllers
             {
                 return BadRequest("Invalid Entry. An Entry should have a title and content");
             }
+
+            var userId = HttpContext.Items["User"].ToString();
+
             var entry = new Entry
             {
                 Id = Guid.NewGuid().ToString(),
@@ -34,16 +39,20 @@ namespace my_diary.Api.Controllers
                 Created = DateTimeOffset.UtcNow,
                 LastUpdated = DateTimeOffset.UtcNow
             };
-            _db.Entries.Add(entry);
+
+            _db.Users.Where(u => u.Id == userId).First().Entries.Add(entry);
             _db.SaveChanges();
             
             return Ok(entry);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{Id}")]
         public IActionResult GetOne([FromRoute] string Id)
         {
-            var entry = _db.Entries.FirstOrDefault(e => e.Id == Id);
+            var userId = HttpContext.Items["User"].ToString();
+            var user = _db.Users.Where(u => u.Id == userId).First();
+
+            var entry = user.Entries.FirstOrDefault(e => e.Id == Id);
             if (entry == null)
             {
                 return BadRequest($"Entry of Id {Id} does not exist");
@@ -55,28 +64,34 @@ namespace my_diary.Api.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            if (!_db.Entries.Any())
+            var userId = HttpContext.Items["User"].ToString();
+            var user = _db.Users.Where(u => u.Id == userId).First();
+
+            if (!user.Entries.Any())
             {
-                return NotFound("No content exists yet");
+                return NotFound("You do not have entries yet. ");
             }
 
-            var entries = _db.Entries.ToList();
+            var entries = user.Entries.ToList();
 
             return Ok(entries);
         }
 
-        [HttpPut("{id}")]
-        public IActionResult UpdateEntry([FromRoute] string id, [FromBody] EntryDto entryDto)
+        [HttpPut("{Id}")]
+        public IActionResult UpdateEntry([FromRoute] string Id, [FromBody] EntryDto entryDto)
         {
             if (!IsValidEntry(entryDto))
             {
                 return BadRequest("Invalid Entry. An Entry should have a title and content");
             }
 
-            var oldEntry = _db.Entries.FirstOrDefault(e => e.Id == id);
+            var userId = HttpContext.Items["User"].ToString();
+            var user = _db.Users.Where(u => u.Id == userId).First();
+
+            var oldEntry = user.Entries.FirstOrDefault(e => e.Id == Id);
             if (oldEntry == null)
             {
-                return BadRequest($"Entry of Id {id} does not exist");
+                return BadRequest($"Entry of Id {Id} does not exist");
             } 
           
             oldEntry.LastUpdated = DateTimeOffset.UtcNow;

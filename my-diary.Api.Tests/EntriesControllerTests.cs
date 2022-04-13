@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using my_diary.Api.Controllers;
@@ -16,13 +17,20 @@ namespace my_diary.Api.Tests
         public SetupFixture()
         {
             using var context = new MainDbContext(options);
-            context.Entries.AddRange(new Entry[]
-            {
-               new Entry{Id = "one", LastUpdated = DateTimeOffset.UtcNow, Title = "Note one", Text = "This is the first note."},
-               new Entry{Id = "two", LastUpdated = DateTimeOffset.UtcNow, Title = "Note two", Text = "This is the second note"},
-               new Entry{Id = "three", LastUpdated = DateTimeOffset.UtcNow, Title = "Note five", Text = "This is the third note"},
-               new Entry{Id = "four", LastUpdated = DateTimeOffset.UtcNow, Title = "Note five", Text = "This is the fourth note"},
+            context.Users.AddRange(new User[]
+            { 
+                new User { Email = "user1@mail.com", Id = "user1Id", UserName = "user1", Password = "abc.123", Entries = new Entry[]
+                    {
+                       new Entry{Id = "one", LastUpdated = DateTimeOffset.UtcNow, Title = "Note one", Text = "This is the first note."},
+                       new Entry{Id = "two", LastUpdated = DateTimeOffset.UtcNow, Title = "Note two", Text = "This is the second note"},
+                       new Entry{Id = "three", LastUpdated = DateTimeOffset.UtcNow, Title = "Note five", Text = "This is the third note"},
+                       new Entry{Id = "four", LastUpdated = DateTimeOffset.UtcNow, Title = "Note five", Text = "This is the fourth note"},
+                    } 
+                },
+                new User{ Email = "user2@mail.com", Id = "user2Id", UserName = "user2", Password = "abc.123"}
+
             });
+
             context.SaveChanges();
         }
         public void Dispose() { }
@@ -31,9 +39,12 @@ namespace my_diary.Api.Tests
     public class EntriesControllerTests : IClassFixture<SetupFixture>
     {
         private readonly DbContextOptions<MainDbContext> _options;
+        private HttpContext httpContext = new DefaultHttpContext();
         public EntriesControllerTests(SetupFixture fixture)
         {
             _options = fixture.options;
+            httpContext.Request.Headers["Authorization"] = "Bearer xyz";
+            httpContext.Items["User"] = "user1Id";
         }
 
         [Fact]
@@ -43,7 +54,13 @@ namespace my_diary.Api.Tests
             using var context = new MainDbContext(_options);
 
             ////Arrange
-            var entriesController = new EntriesController(context);
+            var entriesController = new EntriesController(context)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = httpContext
+                }
+            };
             var entry = new EntryDto
             {
                 Title = "Note five",
@@ -60,29 +77,44 @@ namespace my_diary.Api.Tests
         {
             using var context = new MainDbContext(_options);
             //Arrange
-            var entriesController = new EntriesController(context);
+            var entriesController = new EntriesController(context)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = httpContext
+                }
+            };
+
             var entry = new EntryDto
             {
                 Title = "Note six",
                 Text = "This is the sixth note"
             };
+
+            var user = context.Users.First(u => u.Id == "user1Id");
             //Act
-            var entriesBeforeAdd = context.Entries.ToList().Count;
+            var entriesBeforeAdd = user.Entries.ToList().Count;
             var result = entriesController.CreateEntry(entry);
-            var entriesAfterAdd = context.Entries.ToList().Count;
+            var entriesAfterAdd = user.Entries.ToList().Count;
             var diff = entriesAfterAdd - entriesBeforeAdd;
 
             //Assert 
             var createdEntry = Assert.IsAssignableFrom<OkObjectResult>(result);
             Assert.Equal(1, diff);
-            Assert.Contains((Entry)createdEntry.Value, context.Entries);
+            Assert.Contains((Entry)createdEntry.Value, user.Entries);
         }
 
         [Fact]
         public void CreateEntry_InvalidEntry_ReturnsBadRequest()
         {
             using var context = new MainDbContext(_options);
-            var entriesController = new EntriesController(context);
+            var entriesController = new EntriesController(context)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = httpContext
+                }
+            };
             var result = entriesController.CreateEntry(new Entry());
             Assert.IsAssignableFrom<BadRequestObjectResult>(result);
         }
@@ -90,9 +122,19 @@ namespace my_diary.Api.Tests
         [Fact]
         public void GetAll_NoEntriesExist_ReturnsErrorCode404()
         {
-            using var context = new MainDbContext(new DbContextOptionsBuilder<MainDbContext>().UseInMemoryDatabase("diaryDbEmpty").Options);
+            using var context = new MainDbContext(_options);
 
-            var entriesController = new EntriesController(context);
+            HttpContext httpContext2 = new DefaultHttpContext();
+            httpContext2.Request.Headers["Authorization"] = "Bearer wxyz";
+            httpContext2.Items["User"] = "user2Id";
+
+            var entriesController = new EntriesController(context)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = httpContext2
+                }
+            }; 
             var response = entriesController.GetAll();
             Assert.IsAssignableFrom<NotFoundObjectResult>(response);
         }
@@ -101,7 +143,13 @@ namespace my_diary.Api.Tests
         public void GetAll_EntriesExist_ReturnsOkResult()
         {
             using var context = new MainDbContext(_options);
-            var entriesController = new EntriesController(context);
+            var entriesController = new EntriesController(context)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = httpContext
+                }
+            }; 
 
             var result = entriesController.GetAll();
             var okObjResult = Assert.IsAssignableFrom<OkObjectResult>(result);
@@ -115,7 +163,13 @@ namespace my_diary.Api.Tests
         public void GetOne_UseWrongId_ReturnsBadRequest()
         {
             using var context = new MainDbContext(_options);
-            var entriesController = new EntriesController(context);
+            var entriesController = new EntriesController(context)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = httpContext
+                }
+            };
             var result = entriesController.GetOne("test");
             Assert.IsAssignableFrom<BadRequestObjectResult>(result);
         }
@@ -124,7 +178,13 @@ namespace my_diary.Api.Tests
         public void GetOne_ProvideValidId_ReturnEntry()
         {
             using var context = new MainDbContext(_options);
-            var entriesController = new EntriesController(context);
+            var entriesController = new EntriesController(context)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = httpContext
+                }
+            };
 
             var entry = entriesController.GetOne("three");
             var returned = Assert.IsAssignableFrom<OkObjectResult>(entry);
@@ -143,7 +203,13 @@ namespace my_diary.Api.Tests
                 Text = "Updated the first note"
             };
 
-            var entriesController = new EntriesController(context);
+            var entriesController = new EntriesController(context)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = httpContext
+                }
+            };
             //Invalid Id, valid object
             var result = entriesController.UpdateEntry(null, testEntry);
             Assert.IsAssignableFrom<BadRequestObjectResult>(result);
@@ -165,11 +231,25 @@ namespace my_diary.Api.Tests
                 Text = "Updated the second note"
             };
 
-            var entriesController = new EntriesController(context);
+            var entriesController = new EntriesController(context)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = httpContext
+                }
+            };
 
             var result = entriesController.UpdateEntry("two", testEntry);
             Assert.IsAssignableFrom<OkObjectResult>(result);
+        }
 
+        [Fact]
+        public void UnauthorizedUser_CannotAccessEndpoints()
+        {
+            using var context = new MainDbContext(_options);
+            var entriesController = new EntriesController(context);
+
+            Assert.Throws<NullReferenceException>(() => entriesController.GetAll());
         }
     }
 }
