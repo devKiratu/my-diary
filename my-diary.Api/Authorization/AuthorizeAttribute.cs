@@ -16,7 +16,8 @@ namespace my_diary.Api.Authorization
             var IsLoggedIn = context.HttpContext.Items.TryGetValue("User", out _);
             if(!IsLoggedIn)
             {
-                context.Result = new JsonResult(new { message = "Unauthorized!" }) {StatusCode = StatusCodes.Status401Unauthorized};
+                context.Result = new UnauthorizedResult();
+                    //new JsonResult(new { message = "Unauthorized!" }) {StatusCode = StatusCodes.Status401Unauthorized};
             }
         }
     }
